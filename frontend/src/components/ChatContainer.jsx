@@ -55,7 +55,7 @@ const ChatContainer = () => {
         ) : (
           messages.map((message, index) => {
             const isUserMessage = message.senderId === authUser._id;
-            const showAvatar = true; // You can add logic here to only show avatar for first message in a sequence
+            const showAvatar = true; 
             
             return (
               <div
@@ -64,7 +64,7 @@ const ChatContainer = () => {
                 ref={index === messages.length - 1 ? messageEndRef : null}
               >
                 <div className={`flex max-w-[80%] ${isUserMessage ? "flex-row-reverse" : "flex-row"} items-end gap-2`}>
-                  {/* Avatar */}
+
                   {showAvatar && (
                     <div className="flex-shrink-0">
                       <div className="size-8 rounded-full border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0">
@@ -81,7 +81,6 @@ const ChatContainer = () => {
                     </div>
                   )}
                   
-                  {/* Message content */}
                   <div className="flex flex-col gap-1">
                     <div 
                       className={`px-4 py-3 rounded-2xl ${
@@ -90,6 +89,14 @@ const ChatContainer = () => {
                           : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-bl-none"
                       }`}
                     >
+                      {message.video && (
+                        <video
+                          src={message.video}
+                          controls
+                          className="max-w-full rounded-lg mb-2"
+                          style={{ maxHeight: '300px' }}
+                        />
+                      )}
                       {message.image && (
                         <img
                           src={message.image}
@@ -99,8 +106,7 @@ const ChatContainer = () => {
                       )}
                       {message.text && <p>{message.text}</p>}
                     </div>
-                    
-                    {/* Timestamp */}
+
                     <span 
                       className={`text-xs text-gray-500 dark:text-gray-400 ${
                         isUserMessage ? "text-right mr-1" : "text-left ml-1"
