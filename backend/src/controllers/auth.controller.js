@@ -46,6 +46,7 @@ export const signup = async (req, res) => {
   }
 };
 
+// auth.controller.js
 export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -60,6 +61,10 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    // Update lastSeen to null (online)
+    user.lastSeen = null;
+    await user.save();
+
     generateToken(user._id, res);
 
     res.status(200).json({
@@ -67,6 +72,7 @@ export const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
+      lastSeen: user.lastSeen,
     });
   } catch (error) {
     console.log("Error in login controller", error.message);
@@ -74,8 +80,11 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = (req, res) => {
+export const logout = async (req, res) => {
   try {
+    // Update lastSeen before logout
+    await User.findByIdAndUpdate(req.user._id, { lastSeen: new Date() });
+    
     res.cookie("jwt", "", { maxAge: 0 });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
