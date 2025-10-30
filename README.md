@@ -51,6 +51,7 @@ A full-stack real-time chat application built with modern web technologies.
 
 1. Start the backend server
    ```bash
+   cd backend
    npm run dev
    ```
 
@@ -81,11 +82,3 @@ A full-stack real-time chat application built with modern web technologies.
 - `GET /api/users` - Get all users
 - `GET /api/messages/:id` - Get messages for a specific chat
 - `POST /api/messages` - Send a new message
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
