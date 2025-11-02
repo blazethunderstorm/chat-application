@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Camera, Mail, User } from "lucide-react";
+import toast from "react-hot-toast";
 
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
+  const [fullName, setFullName] = useState(authUser?.fullName || "");
+  const [isEditingName, setIsEditingName] = useState(false);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -18,6 +21,26 @@ const ProfilePage = () => {
       setSelectedImg(base64Image);
       await updateProfile({ profilePic: base64Image });
     };
+  };
+
+  const handleNameUpdate = async () => {
+    if (!fullName.trim()) {
+      toast.error("Full name cannot be empty");
+      return;
+    }
+
+    if (fullName === authUser?.fullName) {
+      setIsEditingName(false);
+      return;
+    }
+
+    await updateProfile({ fullName: fullName.trim() });
+    setIsEditingName(false);
+  };
+
+  const handleCancelEdit = () => {
+    setFullName(authUser?.fullName || "");
+    setIsEditingName(false);
   };
 
   const formatDate = (dateString) => {
@@ -65,13 +88,12 @@ const ProfilePage = () => {
 
             {isUpdatingProfile && (
               <p className="text-sm text-primary mt-4 animate-pulse">
-                Updating profile picture...
+                Updating profile...
               </p>
             )}
           </div>
 
           <div className="space-y-6">
-
             <div className="form-control">
               <label className="label">
                 <span className="label-text flex items-center gap-2">
@@ -79,12 +101,41 @@ const ProfilePage = () => {
                   Full Name
                 </span>
               </label>
-              <input
-                type="text"
-                className="input input-bordered w-full"
-                value={authUser?.fullName || ""}
-                disabled
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  disabled={!isEditingName || isUpdatingProfile}
+                />
+                {!isEditingName ? (
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setIsEditingName(true)}
+                    disabled={isUpdatingProfile}
+                  >
+                    Edit
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="btn btn-success"
+                      onClick={handleNameUpdate}
+                      disabled={isUpdatingProfile}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="btn btn-ghost"
+                      onClick={handleCancelEdit}
+                      disabled={isUpdatingProfile}
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="form-control">
@@ -119,7 +170,7 @@ const ProfilePage = () => {
 
         <div className="mt-4 text-center">
           <p className="text-sm text-base-content/60">
-            Click the camera icon to update your profile picture
+            Click the camera icon to update your profile picture or edit button to change your name
           </p>
         </div>
       </div>
