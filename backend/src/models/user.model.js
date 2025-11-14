@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    lastSeen: {
+      type: Date,
+      default: Date.now, // this is added to get the recent time user was online
+    },
   },
   { timestamps: true }
 );
