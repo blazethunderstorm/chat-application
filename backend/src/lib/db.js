@@ -4,7 +4,7 @@ export const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 10000,
-      tls: true, // enforce TLS
+      tls: true,
     });
     console.log(`✅ MongoDB connected: ${conn.connection.host}`);
   } catch (error) {

@@ -12,7 +12,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 h-16">
         <div className="flex items-center justify-between h-full">
-          {/* Logo and app name */}
+
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-2.5 group">
               <div className="size-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center 
@@ -23,7 +23,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Navigation buttons */}
+
           <div className="flex items-center gap-3">
             <Link
               to={"/settings"}

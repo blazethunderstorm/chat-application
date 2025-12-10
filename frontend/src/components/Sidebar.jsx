@@ -14,7 +14,6 @@ const Sidebar = () => {
     getUsers();
   }, [getUsers]);
 
-  // Filter users based on online status and search query
   const filteredUsers = users.filter((user) => {
     const matchesOnlineFilter = showOnlineOnly ? onlineUsers.includes(user._id) : true;
     const matchesSearchQuery = user.fullName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -37,7 +36,7 @@ const Sidebar = () => {
           </div>
         </div>
 
-        {/* Search */}
+
         <div className="relative mb-3 hidden lg:block">
           <input
             type="text"
@@ -51,7 +50,6 @@ const Sidebar = () => {
           <Search className="absolute left-3 top-3 size-4 text-gray-400" />
         </div>
 
-        {/* Filter toggle */}
         <div className="hidden lg:flex items-center">
           <label className="inline-flex items-center cursor-pointer">
             <input
@@ -71,7 +69,6 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Contact list */}
       <div className="overflow-y-auto flex-1 py-2">
         {filteredUsers.length > 0 ? (
           filteredUsers.map((user) => {
@@ -88,7 +85,7 @@ const Sidebar = () => {
                     : "hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent"
                   }`}
               >
-                {/* Avatar with online indicator */}
+
                 <div className="relative flex-shrink-0">
                   <img
                     src={user.profilePic || "/avatar.png"}
@@ -105,7 +102,6 @@ const Sidebar = () => {
                   )}
                 </div>
 
-                {/* User info - only visible on larger screens */}
                 <div className="hidden lg:block text-left min-w-0 flex-1">
                   <div className={`font-medium truncate ${
                     isSelected ? "text-blue-700 dark:text-blue-400" : "text-gray-800 dark:text-gray-200"

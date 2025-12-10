@@ -82,24 +82,39 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  connectSocket: () => {
-    const { authUser } = get();
-    if (!authUser || get().socket?.connected) return;
 
-    const socket = io(BASE_URL, {
-      query: {
-        userId: authUser._id,
-      },
-    });
-    socket.connect();
+connectSocket: () => {
+  const { authUser } = get();
+  if (!authUser || get().socket?.connected) return;
 
-    set({ socket: socket });
+  const socket = io(BASE_URL, {
+    query: {
+      userId: authUser._id,
+    },
+  });
+  socket.connect();
 
-    socket.on("getOnlineUsers", (userIds) => {
-      set({ onlineUsers: userIds });
-    });
-  },
-  disconnectSocket: () => {
-    if (get().socket?.connected) get().socket.disconnect();
-  },
+  set({ socket: socket });
+
+  socket.on("getOnlineUsers", (userIds) => {
+    set({ onlineUsers: userIds });
+  });
+
+
+  socket.on("userLastSeenUpdate", ({ userId, lastSeen }) => {
+    const { useChatStore } = require("./useChatStore");
+    const users = useChatStore.getState().users;
+    const updatedUsers = users.map(user => 
+      user._id === userId ? { ...user, lastSeen } : user
+    );
+    useChatStore.setState({ users: updatedUsers });
+    
+    const selectedUser = useChatStore.getState().selectedUser;
+    if (selectedUser?._id === userId) {
+      useChatStore.setState({ 
+        selectedUser: { ...selectedUser, lastSeen } 
+      });
+    }
+  });
+},
 }));

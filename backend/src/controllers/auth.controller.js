@@ -61,7 +61,6 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Update lastSeen to null (online)
     user.lastSeen = null;
     await user.save();
 
@@ -82,7 +81,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    // Update lastSeen before logout
+
     await User.findByIdAndUpdate(req.user._id, { lastSeen: new Date() });
     
     res.cookie("jwt", "", { maxAge: 0 });
