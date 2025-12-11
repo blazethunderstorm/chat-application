@@ -1,10 +1,11 @@
 import { useChatStore } from "../store/useChatStore";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef,useState } from "react";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
+import { Trash2 } from "lucide-react";
 
 const ChatContainer = () => {
   const {
@@ -14,9 +15,17 @@ const ChatContainer = () => {
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
+    deleteMessage,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
+  const [hovermsg, sethovermsg] = useState(null);
+
+  const deletemsg=async(messageId)=>{
+    if(window.confirm("Are you sure you want to delete this message?")){
+    await deleteMessage(messageId);
+    }
+  }
 
   useEffect(() => {
     getMessages(selectedUser._id);
@@ -35,7 +44,6 @@ const ChatContainer = () => {
       <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
         <ChatHeader />
         <MessageSkeleton />
-        <MessageInput />
       </div>
     );
   }
@@ -82,13 +90,24 @@ const ChatContainer = () => {
                   )}
                   
                   <div className="flex flex-col gap-1">
-                    <div 
-                      className={`px-4 py-3 rounded-2xl ${
-                        isUserMessage 
-                          ? "bg-blue-600 text-white rounded-br-none" 
-                          : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-bl-none"
-                      }`}
-                    >
+                      <div 
+                        className={`px-4 py-3 rounded-2xl relative ${
+                          isUserMessage 
+                            ? "bg-blue-600 text-white rounded-br-none" 
+                            : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-bl-none"
+                        }`}
+                        onMouseEnter={() => sethovermsg(message._id)}
+                        onMouseLeave={() => sethovermsg(null)}
+                      >
+                        {isUserMessage && hovermsg === message._id && (
+                          <button
+                            onClick={() => deletemsg(message._id)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                            title="Delete message"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       {message.video && (
                         <video
                           src={message.video}
