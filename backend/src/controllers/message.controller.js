@@ -18,14 +18,12 @@ export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
     const myId = req.user._id;
-
     const messages = await Message.find({
       $or: [
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
       ],
     });
-
     res.status(200).json(messages);
   } catch (error) {
     console.log("Error in getMessages controller: ", error.message);
@@ -33,57 +31,62 @@ export const getMessages = async (req, res) => {
   }
 };
 
-export const deleteMessage = async (req, res) => {  
+export const deleteMessage = async (req, res) => {
   try {
     const { id } = req.params;
     const message = await Message.findById(id);
-    
     if (!message) {
       return res.status(404).json({ message: "Message not found" });
     }
-    
     if (message.senderId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
-    
     await Message.findByIdAndDelete(id);
     res.status(200).json({ message: "Message deleted successfully" });
   } catch (error) {
     console.log("Error in delete message:", error);
     res.status(500).json({ message: "Server error" });
   }
-}
+};
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image, video } = req.body;
+    const { text, images, videos } = req.body; 
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
-    let imageUrl;
-    let videoUrl;
+    let imageUrls = [];
+    let videoUrls = [];
 
-    if (image) {
-      const uploadResponse = await cloudinary.uploader.upload(image);
-      imageUrl = uploadResponse.secure_url;
+    if (images && Array.isArray(images) && images.length > 0) {
+      const imageUploadPromises = images.map((image) =>
+        cloudinary.uploader.upload(image, {
+          folder: "chat-images",
+        })
+      );
+      const imageResults = await Promise.all(imageUploadPromises);
+      imageUrls = imageResults.map((result) => result.secure_url);
     }
 
-    if (video) {
-      const uploadResponse = await cloudinary.uploader.upload(video, {
-        resource_type: "video",
-        folder: "chat-videos",
-        chunk_size: 6000000, 
-        timeout: 120000, 
-      });
-      videoUrl = uploadResponse.secure_url;
+    if (videos && Array.isArray(videos) && videos.length > 0) {
+      const videoUploadPromises = videos.map((video) =>
+        cloudinary.uploader.upload(video, {
+          resource_type: "video",
+          folder: "chat-videos",
+          chunk_size: 6000000,
+          timeout: 120000,
+        })
+      );
+      const videoResults = await Promise.all(videoUploadPromises);
+      videoUrls = videoResults.map((result) => result.secure_url);
     }
 
     const newMessage = new Message({
       senderId,
       receiverId,
       text,
-      image: imageUrl,
-      video: videoUrl,
+      images: imageUrls, 
+      videos: videoUrls, 
     });
 
     await newMessage.save();

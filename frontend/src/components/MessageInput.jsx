@@ -5,71 +5,84 @@ import toast from "react-hot-toast";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
-  const [videoPreview, setVideoPreview] = useState(null);
+  const [imagePreviews, setImagePreviews] = useState([]); 
+  const [videoPreviews, setVideoPreviews] = useState([]); 
   const fileInputRef = useRef(null);
   const videoInputRef = useRef(null);
   const { sendMessage } = useChatStore();
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+    const files = Array.from(e.target.files); 
+    
+    if (files.length + imagePreviews.length > 10) {
+      toast.error("You can only upload up to 10 images at once");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+    files.forEach((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select only image files");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews((prev) => [...prev, reader.result]); 
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleVideoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file.type.startsWith("video/")) {
-      toast.error("Please select a video file");
+    const files = Array.from(e.target.files); 
+    
+    if (files.length + videoPreviews.length > 5) {
+      toast.error("You can only upload up to 5 videos at once");
       return;
     }
 
+    files.forEach((file) => {
+      if (!file.type.startsWith("video/")) {
+        toast.error("Please select only video files");
+        return;
+      }
 
-    const maxSize = 100 * 1024 * 1024; 
-    if (file.size > maxSize) {
-      toast.error("Video file size should be less than 100MB");
-      return;
-    }
+      const maxSize = 100 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast.error("Video file size should be less than 100MB");
+        return;
+      }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setVideoPreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setVideoPreviews((prev) => [...prev, reader.result]); 
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const removeImage = () => {
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const removeImage = (index) => { 
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const removeVideo = () => {
-    setVideoPreview(null);
-    if (videoInputRef.current) videoInputRef.current.value = "";
+  const removeVideo = (index) => { 
+    setVideoPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim() && !imagePreview && !videoPreview) return;
+    if (!text.trim() && imagePreviews.length === 0 && videoPreviews.length === 0) return;
 
     try {
       await sendMessage({
         text: text.trim(),
-        image: imagePreview,
-        video: videoPreview,
+        images: imagePreviews, 
+        videos: videoPreviews, 
       });
 
       setText("");
-      setImagePreview(null);
-      setVideoPreview(null);
+      setImagePreviews([]); 
+      setVideoPreviews([]); 
       if (fileInputRef.current) fileInputRef.current.value = "";
       if (videoInputRef.current) videoInputRef.current.value = "";
     } catch (error) {
@@ -80,43 +93,49 @@ const MessageInput = () => {
   return (
     <div className="p-4 w-full">
 
-      {imagePreview && (
-        <div className="mb-3 flex items-center gap-2">
-          <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
-            />
-            <button
-              onClick={removeImage}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300
-              flex items-center justify-center"
-              type="button"
-            >
-              <X className="size-3" />
-            </button>
-          </div>
+      
+      {imagePreviews.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {imagePreviews.map((preview, index) => (
+            <div key={`img-${index}`} className="relative">
+              <img
+                src={preview}
+                alt={`Preview ${index + 1}`}
+                className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
+              />
+              <button
+                onClick={() => removeImage(index)}
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300
+                flex items-center justify-center"
+                type="button"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
-      {videoPreview && (
-        <div className="mb-3 flex items-center gap-2">
-          <div className="relative">
-            <video
-              src={videoPreview}
-              className="w-40 h-32 object-cover rounded-lg border border-zinc-700"
-              controls
-            />
-            <button
-              onClick={removeVideo}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300
-              flex items-center justify-center"
-              type="button"
-            >
-              <X className="size-3" />
-            </button>
-          </div>
+      
+      {videoPreviews.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {videoPreviews.map((preview, index) => (
+            <div key={`vid-${index}`} className="relative">
+              <video
+                src={preview}
+                className="w-40 h-32 object-cover rounded-lg border border-zinc-700"
+                controls
+              />
+              <button
+                onClick={() => removeVideo(index)}
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300
+                flex items-center justify-center"
+                type="button"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -133,6 +152,7 @@ const MessageInput = () => {
           <input
             type="file"
             accept="image/*"
+            multiple 
             className="hidden"
             ref={fileInputRef}
             onChange={handleImageChange}
@@ -141,6 +161,7 @@ const MessageInput = () => {
           <input
             type="file"
             accept="video/*"
+            multiple 
             className="hidden"
             ref={videoInputRef}
             onChange={handleVideoChange}
@@ -149,7 +170,7 @@ const MessageInput = () => {
           <button
             type="button"
             className={`hidden sm:flex btn btn-circle
-                     ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+                     ${imagePreviews.length > 0 ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
           >
             <Image size={20} />
@@ -158,7 +179,7 @@ const MessageInput = () => {
           <button
             type="button"
             className={`hidden sm:flex btn btn-circle
-                     ${videoPreview ? "text-emerald-500" : "text-zinc-400"}`}
+                     ${videoPreviews.length > 0 ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => videoInputRef.current?.click()}
           >
             <Video size={20} />
@@ -168,7 +189,7 @@ const MessageInput = () => {
         <button
           type="submit"
           className="btn btn-sm btn-circle"
-          disabled={!text.trim() && !imagePreview && !videoPreview}
+          disabled={!text.trim() && imagePreviews.length === 0 && videoPreviews.length === 0}
         >
           <Send size={22} />
         </button>
