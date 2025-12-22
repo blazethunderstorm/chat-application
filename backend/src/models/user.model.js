@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false, 
       minlength: 6,
     },
     profilePic: {
@@ -22,7 +22,21 @@ const userSchema = new mongoose.Schema(
     },
     lastSeen: {
       type: Date,
-      default: Date.now, // this is added to get the recent time user was online
+      default: Date.now,
+    },
+
+    authProvider: {
+      type: String,
+      enum: ['local', 'google', 'github'],
+      default: 'local',
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+    },
+    githubId: {
+      type: String,
+      sparse: true,
     },
   },
   { timestamps: true }
